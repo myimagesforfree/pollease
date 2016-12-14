@@ -1,11 +1,14 @@
 from bottle import route, run, template, request
+import command_parser
 
-gbl = dict()
-gbl['data'] = []
+ERR_POLL_ALREADY_IN_PROGRESS = "Error. There is already a poll in progress. Please close that poll first."
+
+test_dictionary = {'data': []}
+current_poll = None
 
 @route('/')
 def home():
-  return gbl
+  return test_dictionary
 
 @route('/hello/<name>')
 def index(name):
@@ -13,6 +16,57 @@ def index(name):
 
 @route('/bjork', method='POST')
 def do_a_thing():
-  gbl['data'].append(request.body.read())
+  test_dictionary['data'].append(request.body.read())
+
+@route('/create', method='POST')
+def create_poll():
+  if current_poll is not None:
+    raw_json = request.json
+    command_text = raw_json.get("text")
+    poll_name, voting_choices = command_parser.parse_create_command(command_text)
+    return generate_new_poll_response(poll_name, voting_choices)
+  else:
+    return generate_error_response(ERR_POLL_ALREADY_IN_PROGRESS)
+
+@route('/close', method='POST')
+def close_poll():
+  global current_poll
+  current_poll = None
+
+def generate_new_poll_response(poll_name, voting_choices):
+  attachments = []
+
+  for choice in voting_choices:
+    attachments.append({
+      {
+        "text": choice,
+        "fallback": "You are unable to vote",
+        "callback_id": "vote_callback",
+        "color": "#3AA3E3",
+        "attachment_type": "default",
+        "actions": [
+          {
+            "name": "vote",
+            "text": "Vote",
+            "type": "button",
+            "value": "true"
+          }
+        ]
+      }
+    })
+
+  global current_poll
+
+  current_poll = {
+    "text": poll_name,
+    "attachments": attachments
+  }
+
+  return current_poll
+
+def generate_error_response(error_message):
+    return {
+      "text": error_message
+      }
 
 run(host='0.0.0.0', port=8080)
