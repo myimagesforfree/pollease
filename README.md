@@ -1,2 +1,2 @@
 # pollease
-Slack Bot for anonymous surveys/polls
+Custom Slack integration for anonymous surveys/polls
