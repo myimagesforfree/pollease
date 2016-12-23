@@ -1,10 +1,34 @@
 from bottle import route, run, template, request
 import command_parser
+import logging
+import socket
+from logging.handlers import SysLogHandler
 
 ERR_POLL_ALREADY_IN_PROGRESS = "Error. There is already a poll in progress. Please close that poll first."
 
 test_dictionary = {'data': []}
 current_poll = None
+
+class ContextFilter(logging.Filter):
+  hostname = socket.gethostname()
+
+  def filter(self, record):
+    record.hostname = ContextFilter.hostname
+    return True
+    
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+f = ContextFilter()
+logger.addFilter(f)
+
+syslog = SysLogHandler(address=('logs5.papertrailapp.com', 33398))
+formatter = logging.Formatter('%(asctime)s %(hostname)s YOUR_APP: %(message)s', datefmt='%b %d %H:%M:%S')
+
+syslog.setFormatter(formatter)
+logger.addHandler(syslog)
+
+logger.info("This is a message")
 
 @route('/')
 def home():
