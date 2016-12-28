@@ -7,6 +7,7 @@ import command_parser
 import logging
 import socket
 from logging.handlers import SysLogHandler
+from papertrail import Papertrail
 
 ERR_POLL_ALREADY_IN_PROGRESS = "Error. There is already a poll in progress. " + \
     "Please close that poll first."
@@ -14,27 +15,9 @@ ERR_POLL_ALREADY_IN_PROGRESS = "Error. There is already a poll in progress. " + 
 TEST_DICTIONARY = {'data': []}
 CURRENT_POLL = None
 
-class ContextFilter(logging.Filter):
-    hostname = socket.gethostname()
+LOGGER = Papertrail().get_papertrail_logger()
 
-    def filter(self, record):
-        record.hostname = ContextFilter.hostname
-        return True
-
-LOGGER = logging.getLogger()
-LOGGER.setLevel(logging.INFO)
-
-F = ContextFilter()
-LOGGER.addFilter(F)
-
-SYSLOG = SysLogHandler(address=('logs5.papertrailapp.com', 33398))
-FORMATTER = logging.Formatter('%(asctime)s %(hostname)s YOUR_APP: %(message)s', \
-    datefmt='%b %d %H:%M:%S')
-
-SYSLOG.setFormatter(FORMATTER)
-LOGGER.addHandler(SYSLOG)
-
-LOGGER.info("This is a message")
+LOGGER.info("This is a message part 2")
 
 @route('/')
 def home():
@@ -50,18 +33,22 @@ def do_a_thing():
 
 @route('/create', method='POST')
 def create_poll():
-    if current_poll is not None:
+    if CURRENT_POLL is not None:
         raw_json = request.json
         command_text = raw_json.get("text")
         poll_name, voting_choices = command_parser.parse_create_command(command_text)
+
+        LOGGER.info("Creating poll: " + poll_name)
         return generate_new_poll_response(poll_name, voting_choices)
     else:
+        LOGGER.info("Failed to create poll: " + poll_name)
         return generate_error_response(ERR_POLL_ALREADY_IN_PROGRESS)
 
 @route('/close', method='POST')
 def close_poll():
-    global current_poll
-    current_poll = None
+    global CURRENT_POLL
+    LOGGER.info("Closing poll: " + CURRENT_POLL.get("text"))
+    CURRENT_POLL = None
 
 def generate_new_poll_response(poll_name, voting_choices):
     attachments = []
@@ -92,7 +79,7 @@ def generate_new_poll_response(poll_name, voting_choices):
         "attachments": attachments
     }
 
-    return current_poll
+    return CURRENT_POLL
 
 def generate_error_response(error_message):
     return {
