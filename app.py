@@ -17,8 +17,6 @@ CURRENT_POLL = None
 
 LOGGER = Papertrail().get_papertrail_logger()
 
-LOGGER.info("This is a message part 2")
-
 @route('/')
 def home():
     return TEST_DICTIONARY
