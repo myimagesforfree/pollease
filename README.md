@@ -1,7 +1,12 @@
 # pollease
 Custom Slack integration for anonymous surveys/polls
 
-Python and Bottle
 
-Example posted to slack command:
-{"data": ["token=TOKENNNNNN&team_id=T3F55CL14&team_domain=swedishchefs&channel_id=C3F55CNDC&channel_name=general&user_id=U3DQ62P5X&user_name=adam.rehill&command=%2Fpollease&text=what+up+bjorkerz&response_url=https%3A%2F%2Fhooks.slack.com%2Fcommands%2FT3GARBAGEFJuO0taWFevCp"]}
+## Debugging locally using ngrok
+1. Visit https://ngrok.com/download and download/install ngrok
+2. Run `sh build.sh`
+3. Run `sh run.sh`
+4. Run `ngork http 7000` (or whatever port is currently in run.sh)
+5. Note the forwarding URL in the command output in step 4 
+6. In the slack slash command integration page for pollease, change the URL to the URL from step 5
+7. Incoming HTTP requests will now be displayed in the command window below your ngork command.
