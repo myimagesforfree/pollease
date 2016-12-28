@@ -2,7 +2,7 @@
     pollease - A Slack poll integration.
     Written by Adam Rehill and Adam Krieger, 2016
 """
-from bottle import route, run, template, request
+from bottle import error, route, run, template, request
 import command_parser
 import logging
 import socket
@@ -39,7 +39,8 @@ def create_poll():
         LOGGER.info("Creating poll: " + poll_name)
         return generate_new_poll_response(poll_name, voting_choices)
     else:
-        LOGGER.info("Failed to create poll: " + poll_name)
+        LOGGER.info("Failed to create poll: " + poll_name + \
+        ". Another poll is already in progress.")
         return generate_error_response(ERR_POLL_ALREADY_IN_PROGRESS)
 
 @route('/close', method='POST')
@@ -83,5 +84,9 @@ def generate_error_response(error_message):
     return {
         "text": error_message
         }
+
+@error(500)
+def handle_error(error):
+    LOGGER.error("An exception occurred: " + error)
 
 run(host='0.0.0.0', port=8080)
