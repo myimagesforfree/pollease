@@ -8,6 +8,8 @@ import logging
 import socket
 from logging.handlers import SysLogHandler
 from papertrail import Papertrail
+from urlparse import parse_qs, urlparse
+import cgi
 
 ERR_POLL_ALREADY_IN_PROGRESS = "Error. There is already a poll in progress. " + \
     "Please close that poll first."
@@ -30,12 +32,12 @@ def do_a_thing():
     TEST_DICTIONARY['data'].append(request.body.read())
 
 @route('/create', method='POST')
-def create_poll():
-    if CURRENT_POLL is not None:
-        raw_json = request.json
-        command_text = raw_json.get("text")
-        poll_name, voting_choices = command_parser.parse_create_command(command_text)
+def create_poll(): 
+    raw_json = parse_request_to_json(request)
+    command_text = raw_json.get("text")
+    poll_name, voting_choices = command_parser.parse_create_command(command_text)
 
+    if CURRENT_POLL is None:
         LOGGER.info("Creating poll: " + poll_name)
         return generate_new_poll_response(poll_name, voting_choices)
     else:
@@ -45,7 +47,6 @@ def create_poll():
 
 @route('/close', method='POST')
 def close_poll():
-    global CURRENT_POLL
     LOGGER.info("Closing poll: " + CURRENT_POLL.get("text"))
     CURRENT_POLL = None
 
@@ -71,8 +72,6 @@ def generate_new_poll_response(poll_name, voting_choices):
             }
         })
 
-    global CURRENT_POLL
-
     CURRENT_POLL = {
         "text": poll_name,
         "attachments": attachments
@@ -88,5 +87,8 @@ def generate_error_response(error_message):
 @error(500)
 def handle_error(error):
     LOGGER.error("An exception occurred: " + error)
+
+def parse_request_to_json(request):
+    return cgi.parse_qs(request.body.read())
 
 run(host='0.0.0.0', port=8080)
