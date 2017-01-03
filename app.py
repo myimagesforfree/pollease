@@ -1,54 +1,43 @@
 """
+    I0011 - inline pylint disables
+    C0103 - variables should b named in constants convention
+    C0111 - no docstring present
+"""
+# pylint: disable=I0011,C0103,C0111
+import sys
+import traceback
+import command_parser
+from constants import ERR_POLL_ALREADY_IN_PROGRESS
+from flask import request, url_for
+from flask_api import FlaskAPI, exceptions, status
+from papertrail import Papertrail
+
+"""
     pollease - A Slack poll integration.
     Written by Adam Rehill and Adam Krieger, 2016
 """
-from bottle import error, route, run, template, request
-import command_parser
-import logging
-import socket
-from logging.handlers import SysLogHandler
-from papertrail import Papertrail
-from urlparse import parse_qs, urlparse
-import cgi
+logger = Papertrail().get_papertrail_logger()
+current_poll = None
 
-ERR_POLL_ALREADY_IN_PROGRESS = "Error. There is already a poll in progress. " + \
-    "Please close that poll first."
+app = FlaskAPI(__name__)
 
-TEST_DICTIONARY = {'data': []}
-CURRENT_POLL = None
-
-LOGGER = Papertrail().get_papertrail_logger()
-
-@route('/')
-def home():
-    return TEST_DICTIONARY
-
-@route('/hello/<name>')
-def index(name):
-    return template('<b>Hello {{name}}</b>!', name=name)
-
-@route('/bjork', method='POST')
-def do_a_thing():
-    TEST_DICTIONARY['data'].append(request.body.read())
-
-@route('/create', method='POST')
-def create_poll(): 
-    raw_json = parse_request_to_json(request)
-    command_text = raw_json.get("text")
+@app.route('/create', methods=['POST'])
+def create_poll():
+    command_text = request.form["text"]
     poll_name, voting_choices = command_parser.parse_create_command(command_text)
 
-    if CURRENT_POLL is None:
-        LOGGER.info("Creating poll: " + poll_name)
+    if current_poll is None:
+        logger.info("Creating poll: " + poll_name)
         return generate_new_poll_response(poll_name, voting_choices)
     else:
-        LOGGER.info("Failed to create poll: " + poll_name + \
+        logger.info("Failed to create poll: " + poll_name + \
         ". Another poll is already in progress.")
         return generate_error_response(ERR_POLL_ALREADY_IN_PROGRESS)
 
-@route('/close', method='POST')
+@app.route('/close', methods=['POST'])
 def close_poll():
-    LOGGER.info("Closing poll: " + CURRENT_POLL.get("text"))
-    CURRENT_POLL = None
+    logger.info("Closing poll: " + current_poll.get("text"))
+    current_poll = None
 
 def generate_new_poll_response(poll_name, voting_choices):
     attachments = []
@@ -84,11 +73,10 @@ def generate_error_response(error_message):
         "text": error_message
         }
 
-@error(500)
-def handle_error(error):
-    LOGGER.error("An exception occurred: " + error)
+@app.errorhandler(Exception)
+def handle_error(exception):
+    logger.error("An exception occurred: " + repr(exception))
+    logger.error(traceback.format_exc())
 
-def parse_request_to_json(request):
-    return cgi.parse_qs(request.body.read())
-
-run(host='0.0.0.0', port=8080)
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=8080)

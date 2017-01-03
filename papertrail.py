@@ -1,7 +1,5 @@
-import command_parser
-import logging
 import socket
-from logging.handlers import SysLogHandler
+from logging.handlers import logging, SysLogHandler
 
 PAPERTRAIL_SERVER = "logs5.papertrailapp.com"
 PAPERTRAIL_PORT = 33398
@@ -15,8 +13,8 @@ class Papertrail():
         logger.addFilter(logging_filter)
 
         syslog = SysLogHandler(address=(PAPERTRAIL_SERVER, PAPERTRAIL_PORT))
-        formatter = logging.Formatter('%(asctime)s %(hostname)s POLLEASE: %(message)s', \
-            datefmt='%b %d %H:%M:%S')
+        formatter = logging.Formatter('%(asctime)s POLLEASE: %(message)s', \
+         datefmt='%b %d %H:%M:%S')
 
         syslog.setFormatter(formatter)
         logger.addHandler(syslog)
