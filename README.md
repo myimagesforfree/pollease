@@ -2,8 +2,11 @@
 Custom Slack integration for anonymous surveys/polls
 
 pollease: _What is my purpose?_
+
 slack: _You create polls_
+
 pollease: _Oh my god_
+
 slack: _Yeah, welcome to the club, pal_
 
 ## Adding pollease to slack and debugging locally
