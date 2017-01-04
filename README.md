@@ -1,5 +1,5 @@
 # pollease
-*Custom Slack integration for anonymous surveys/polls*
+**Custom Slack integration for anonymous surveys/polls**
 
 pollease: _What is my purpose?_
 
