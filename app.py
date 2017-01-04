@@ -4,10 +4,14 @@
     C0111 - no docstring present
 """
 # pylint: disable=I0011,C0103,C0111
-import sys
+
 import traceback
 import command_parser
+import requests
+
 from constants import ERR_POLL_ALREADY_IN_PROGRESS
+from config import SLACK_AUTH_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET
+
 from flask import request, url_for
 from flask_api import FlaskAPI, exceptions, status
 from papertrail import Papertrail
@@ -20,6 +24,26 @@ logger = Papertrail().get_papertrail_logger()
 current_poll = None
 
 app = FlaskAPI(__name__)
+
+@app.route('/authorize', methods=['GET'])
+def authorize():
+    code = request.args.get('code')
+
+    query_string = "?client_id=%s&client_secret=%s&code=%s" % \
+     (SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, code)
+
+    auth_request_url = SLACK_AUTH_URL + query_string
+
+    response_json = requests.post(auth_request_url).json()
+
+    if response_json.get("ok"):
+        return "Successfully authorized pollease for slack team."
+    else:
+        return "Error authorizing pollease for slack team."
+
+@app.route('/interactive', methods=['POST'])
+def interactive():
+    logger.info("WOOHOO!")
 
 @app.route('/create', methods=['POST'])
 def create_poll():
@@ -43,7 +67,7 @@ def generate_new_poll_response(poll_name, voting_choices):
     attachments = []
 
     for choice in voting_choices:
-        attachments.append({
+        attachments.append(
             {
                 "text": choice,
                 "fallback": "You are unable to vote",
@@ -55,15 +79,16 @@ def generate_new_poll_response(poll_name, voting_choices):
                         "name": "vote",
                         "text": "Vote",
                         "type": "button",
-                        "value": "true"
+                        "value": "false"
                     }
                 ]
             }
-        })
+        )
 
     CURRENT_POLL = {
         "text": poll_name,
-        "attachments": attachments
+        "attachments": attachments,
+        "response_url": "http://6dfe89e1.ngrok.io/test"
     }
 
     return CURRENT_POLL

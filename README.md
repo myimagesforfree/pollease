@@ -2,11 +2,17 @@
 Custom Slack integration for anonymous surveys/polls
 
 
-## Debugging locally using ngrok
+## Adding pollease to slack and debugging locally
 1. Visit https://ngrok.com/download and download/install ngrok
-2. Run `sh build.sh`
-3. Run `sh run.sh`
-4. Run `ngrok http 7000` (or whatever port is currently in run.sh)
-5. Note the forwarding URL in the command output in step 4 
-6. In the slack slash command integration page for pollease, change the URL to the URL from step 5
-7. Incoming HTTP requests will now be displayed in the command window below your ngrok command. (note: this will only allow one person at a time to debug the integration)
+2. Run `ngrok http 7000` (or whatever port is currently in run.sh)
+3. Note the HTTPS forwarding URL in the command output in step 4 
+4. Visit https://api.slack.com/apps?new_app=1
+5. Use pollease as the name of the app, and select your team. (leave "I plan to submit this app to the Slack App Directory" unchecked for now.)
+6. Under "OAuth & Permissions", paste the url from step 5. Append "/authorize" to the url.
+7. Under "Interactive Messages", paste the url from step 5. Append "/interactive" to the url.
+8. Under "Slash Commands", add "/pollease". Paste the url from step 5. Append "/create" to the url.
+9. Under "Basic Information", note the Client ID and Client Secret. Paste those into the local_config.py configuration file. 
+10. Run `sh build.sh`
+11. Run `sh run.sh`
+12. Open add-to-slack.html in a broswer and click the button. 
+13. If everything goes correctly, the app should now be added to your team and the /pollease command should be functional. All HTTP requests will now be tunnelled to your localhost.

@@ -1,8 +1,6 @@
 import socket
 from logging.handlers import logging, SysLogHandler
-
-PAPERTRAIL_SERVER = "logs5.papertrailapp.com"
-PAPERTRAIL_PORT = 33398
+from config import PAPERTRAIL_PORT, PAPERTRAIL_SERVER
 
 class Papertrail():
     def get_papertrail_logger(self):
