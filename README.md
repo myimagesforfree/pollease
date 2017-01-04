@@ -11,7 +11,7 @@ Custom Slack integration for anonymous surveys/polls
 6. Under "OAuth & Permissions", paste the url from step 5. Append "/authorize" to the url.
 7. Under "Interactive Messages", paste the url from step 5. Append "/interactive" to the url.
 8. Under "Slash Commands", add "/pollease". Paste the url from step 5. Append "/create" to the url.
-9. Under "Basic Information", note the Client ID and Client Secret. Paste those into the local_config.py configuration file. 
+9. Under "Basic Information", note the Client ID and Client Secret. Paste those into the config_local.py configuration file. 
 10. Run `sh build.sh`
 11. Run `sh run.sh`
 12. Open add-to-slack.html in a broswer and click the button. 
