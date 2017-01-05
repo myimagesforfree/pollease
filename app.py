@@ -47,6 +47,7 @@ def interactive():
 
 @app.route('/create', methods=['POST'])
 def create_poll():
+    logger.info(current_poll)
     command_text = request.form["text"]
     poll_name, voting_choices = command_parser.parse_create_command(command_text)
 
@@ -85,13 +86,14 @@ def generate_new_poll_response(poll_name, voting_choices):
             }
         )
 
-    CURRENT_POLL = {
+    global current_poll
+    current_poll = {
         "text": poll_name,
         "attachments": attachments,
-        "response_url": "http://6dfe89e1.ngrok.io/test"
+        "response_url": "https://0665a1ee.ngrok.io/test"
     }
 
-    return CURRENT_POLL
+    return current_poll
 
 def generate_error_response(error_message):
     return {
