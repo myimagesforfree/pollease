@@ -6,10 +6,13 @@
 # pylint: disable=I0011,C0103,C0111
 
 import traceback
+from command_parser import CommandParsingException
 import command_parser
 import requests
 
-from constants import ERR_POLL_ALREADY_IN_PROGRESS
+from constants import ERR_POLL_ALREADY_IN_PROGRESS, ERR_NO_POLL_IN_PROGRESS, \
+ERR_UNKNOWN, COMMAND_CREATE, COMMAND_CLOSE
+
 from config import SLACK_AUTH_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET
 
 from flask import request, url_for
@@ -41,15 +44,37 @@ def authorize():
     else:
         return "Error authorizing pollease for slack team."
 
+@app.route('/pollease', methods=['POST'])
+def pollease():
+    command_text = request.form["text"]
+
+    try:
+        command, command_params = command_parser.parse_pollease_command(command_text)
+
+        if command == COMMAND_CREATE:
+            return create_poll(command_params)
+        elif command == COMMAND_CLOSE:
+            return close_poll()
+
+    except CommandParsingException as e:
+        return generate_return_message(str(e))
+    except Exception:
+        return generate_return_message(ERR_UNKNOWN)
+
+    return generate_return_message(ERR_UNKNOWN)
+
 @app.route('/interactive', methods=['POST'])
 def interactive():
     logger.info("WOOHOO!")
 
-@app.route('/create', methods=['POST'])
-def create_poll():
-    logger.info(current_poll)
-    command_text = request.form["text"]
-    poll_name, voting_choices = command_parser.parse_create_command(command_text)
+@app.errorhandler(Exception)
+def handle_error(exception):
+    logger.error("An exception occurred: " + repr(exception))
+    logger.error(traceback.format_exc())
+
+
+def create_poll(command_params):
+    poll_name, voting_choices = command_parser.parse_create_command(command_params)
 
     if current_poll is None:
         logger.info("Creating poll: " + poll_name)
@@ -57,12 +82,19 @@ def create_poll():
     else:
         logger.info("Failed to create poll: " + poll_name + \
         ". Another poll is already in progress.")
-        return generate_error_response(ERR_POLL_ALREADY_IN_PROGRESS)
+        return generate_return_message(ERR_POLL_ALREADY_IN_PROGRESS)
 
-@app.route('/close', methods=['POST'])
 def close_poll():
-    logger.info("Closing poll: " + current_poll.get("text"))
-    current_poll = None
+    global current_poll
+
+    if current_poll is None:
+        return generate_return_message(ERR_NO_POLL_IN_PROGRESS)
+    else:
+        poll_name = current_poll.get("text")
+        logger.info("Closing poll: " + poll_name)
+
+        current_poll = None
+        return generate_return_message("Poll: '" + poll_name + "' has now been closed.")
 
 def generate_new_poll_response(poll_name, voting_choices):
     attachments = []
@@ -71,6 +103,7 @@ def generate_new_poll_response(poll_name, voting_choices):
         attachments.append(
             {
                 "text": choice,
+                "response_type": "in_channel",
                 "fallback": "You are unable to vote",
                 "callback_id": "vote_callback",
                 "color": "#3AA3E3",
@@ -95,15 +128,10 @@ def generate_new_poll_response(poll_name, voting_choices):
 
     return current_poll
 
-def generate_error_response(error_message):
+def generate_return_message(message):
     return {
-        "text": error_message
+        "text": message
         }
-
-@app.errorhandler(Exception)
-def handle_error(exception):
-    logger.error("An exception occurred: " + repr(exception))
-    logger.error(traceback.format_exc())
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)

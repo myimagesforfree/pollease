@@ -20,7 +20,7 @@ slack: _Yeah, welcome to the club, pal_
 4. Continue to configure pollease, the new Slack integration:
     - Under "OAuth & Permissions", paste the HTTPS_FORWARDING_URL, and append "/authorize" to the url.
     - Under "Interactive Messages", paste the HTTPS_FORWARDING_URL, and append "/interactive" to the url.
-    - Under "Slash Commands", add "/pollease". Use HTTPS_FORWARDING_URL, and append "/create" to the url.
+    - Under "Slash Commands", add "/pollease". Use HTTPS_FORWARDING_URL, and append "/pollease" to the url.
 5. Configure pollease, the app server
     - Under "Basic Information", copy Client ID and Client Secret to config_local.py
 6. Run `sh build.sh`
