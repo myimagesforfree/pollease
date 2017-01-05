@@ -11,15 +11,23 @@ slack: _Yeah, welcome to the club, pal_
 
 ## Adding pollease to slack and debugging locally
 1. Visit https://ngrok.com/download and download/install ngrok
-2. Run `ngrok http 7000` (or whatever port is currently in run.sh)
-3. Note the HTTPS forwarding URL in the command output in step 4 
-4. Visit https://api.slack.com/apps?new_app=1
-5. Use pollease as the name of the app, and select your team. (leave "I plan to submit this app to the Slack App Directory" unchecked for now.)
-6. Under "OAuth & Permissions", paste the url from step 5. Append "/authorize" to the url.
-7. Under "Interactive Messages", paste the url from step 5. Append "/interactive" to the url.
-8. Under "Slash Commands", add "/pollease". Paste the url from step 5. Append "/create" to the url.
-9. Under "Basic Information", note the Client ID and Client Secret. Paste those into the config_local.py configuration file. 
-10. Run `sh build.sh`
-11. Run `sh run.sh`
-12. Open add-to-slack.html in a broswer and click the button. 
-13. If everything goes correctly, the app should now be added to your team and the /pollease command should be functional. All HTTP requests will now be tunnelled to your localhost.
+2. Run `ngrok http 7000` (or whatever port is currently in run.sh) 
+    - Note the HTTPS Forwarding URL (HTTPS_FORWARDING_URL)
+3. Visit https://api.slack.com/apps?new_app=1
+    - Use pollease as the name of the app
+    - Select your team. 
+    - Leave "I plan to submit this app to the Slack App Directory" unchecked for now.
+4. Continue to configure pollease, the new Slack integration:
+    - Under "OAuth & Permissions", paste the HTTPS_FORWARDING_URL, and append "/authorize" to the url.
+    - Under "Interactive Messages", paste the HTTPS_FORWARDING_URL, and append "/interactive" to the url.
+    - Under "Slash Commands", add "/pollease". Use HTTPS_FORWARDING_URL, and append "/create" to the url.
+5. Configure pollease, the app server
+    - Under "Basic Information", copy Client ID and Client Secret to config_local.py
+6. Run `sh build.sh`
+    - This compiles the docker image
+7. Run `sh run.sh`
+    - This starts a new container with the pollease server image
+8. Add pollease to your Slack team
+    - Edit add-to-slack.html and insert your Client ID
+    - Open add-to-slack.html in a browser and click the button. 
+9. If everything goes correctly, the app should now be added to your team and the /pollease command should be functional. All HTTP requests will now be tunnelled to your localhost.
