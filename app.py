@@ -18,6 +18,7 @@ from config import SLACK_AUTH_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET
 from flask import request, url_for
 from flask_api import FlaskAPI, exceptions, status
 from papertrail import logger
+from polls_repository import PollsRepository, Poll
 
 """
     pollease - A Slack poll integration.
@@ -25,6 +26,11 @@ from papertrail import logger
 """
 current_poll = None
 app = FlaskAPI(__name__)
+
+repo = PollsRepository()
+poll = Poll("123", "456", "789", "test poll name", True, "987")
+repo.create_poll(poll)
+repo.fetch_poll("123")
 
 @app.route('/authorize', methods=['GET'])
 def authorize():
