@@ -17,15 +17,13 @@ from config import SLACK_AUTH_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET
 
 from flask import request, url_for
 from flask_api import FlaskAPI, exceptions, status
-from papertrail import Papertrail
+from papertrail import logger
 
 """
     pollease - A Slack poll integration.
     Written by Adam Rehill and Adam Krieger, 2016
 """
-logger = Papertrail().get_papertrail_logger()
 current_poll = None
-
 app = FlaskAPI(__name__)
 
 @app.route('/authorize', methods=['GET'])
