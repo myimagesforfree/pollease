@@ -26,11 +26,7 @@ from polls_repository import PollsRepository, Poll
 """
 current_poll = None
 app = FlaskAPI(__name__)
-
 repo = PollsRepository()
-poll = Poll("123", "456", "789", "test poll name", True, "987")
-repo.create_poll(poll)
-repo.fetch_poll("123")
 
 @app.route('/authorize', methods=['GET'])
 def authorize():
