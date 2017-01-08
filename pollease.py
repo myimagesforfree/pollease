@@ -2,6 +2,7 @@
     Pollease Action Central
 """
 import command_parser
+from models.poll import Poll
 
 from constants import ERR_POLL_ALREADY_IN_PROGRESS, ERR_NO_POLL_IN_PROGRESS
 
@@ -16,6 +17,8 @@ def create_poll(command_params, repo, db_conn):
 
     if current_poll is None:
         logger.info("Creating poll: " + poll_name)
+        new_poll = Poll("newpoll", "team", "chan", "poll_name", True, "owner")
+        repo.create_poll(db_conn, new_poll)
         return generate_new_poll_response(poll_name, voting_choices)
     else:
         logger.info("Failed to create poll: " + poll_name + \

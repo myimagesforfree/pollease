@@ -11,8 +11,11 @@ def parse_pollease_command(command_text):
         Parses the command text to an object.
         If the command is valid, returns the command to be used.
     """
+
+    #Slack likes to use smart quotes, but shlex doesn't deal with them
     command_text = command_text.replace(u"\u201d", "\"").replace(u"\u201c", "\"")
     command_text = command_text.replace(u"\u2018", "'").replace(u"\u2019", "'")
+
     params = shlex.split(command_text.encode('utf8'))
     command = params.pop(0).lower()
 

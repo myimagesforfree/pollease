@@ -48,8 +48,6 @@ def pollease():
     """Main command router for pollease actions."""
     command_text = request.form["text"]
 
-    logger.error('hello')
-    logger.info('hello info')
     logger.info(command_text)
 
     try:
