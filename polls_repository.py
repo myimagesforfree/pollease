@@ -7,17 +7,16 @@
 
 import sqlite3
 from papertrail import logger
-from db_constants import SQL_CREATE_POLL_OPTIONS_TABLE, SQL_CREATE_POLLS_TABLE, \
-SQL_CREATE_VOTES_TABLE, SQL_CREATE_POLL, SQL_FETCH_POLL
+from db_constants import *
 
-def get_connection():
-    return sqlite3.connect(':memory:')
+def get_connection(db_path):
+    return sqlite3.connect(db_path)
 
-class PollsRepository():
+class PollsRepository(object):
 
-    def __init__(self):
+    def __init__(self, db_path):
         try:
-            self.conn = get_connection()
+            self.conn = get_connection(db_path)
             self.build_db()
             logger.info("Successfully initialized sqlite3 in-memory database.")
         except sqlite3.Error as e:
@@ -54,7 +53,27 @@ class PollsRepository():
             logger.info("Error retrieving poll " + poll.id + " from the database. " + str(e))
             return None
 
-class Poll():
+    def select_first_poll(self, db_conn):
+        cursor = db_conn.execute(SQL_FETCH_POLL_TOP1)
+
+        if not cursor:
+            return None
+        else:
+            poll = None
+            for row in cursor:
+                poll = Poll(row[0], row[1], row[2], row[3], row[4], row[5])
+            return poll
+
+    def __run_sql(self, sql):
+        try:
+            cursor = self.conn.execute(sql)
+
+            return cursor
+        except sqlite3.Error as e:
+            logger.info("SQL Error " + str(e))
+            return None
+
+class Poll(object):
     def __init__(self, poll_id, team_id, channel_id, name, is_open, owner_user_id):
         self.id = poll_id
         self.team_id = team_id
