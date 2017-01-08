@@ -17,6 +17,7 @@ from flask import g
 from flask_api import FlaskAPI
 from papertrail import logger
 from polls_repository import PollsRepository
+from models.slack_command import SlackCommand
 
 """
     pollease - A Slack poll integration.
@@ -48,13 +49,14 @@ def pollease():
     """Main command router for pollease actions."""
     command_text = request.form["text"]
 
-    logger.info(command_text)
+    command_details = SlackCommand(request.form)
+    logger.info(request.form)
 
     try:
         command, command_params = command_parser.parse_pollease_command(command_text)
 
         db_conn = get_db()
-        result = command(command_params=command_params, repo=repo, db_conn=db_conn)
+        result = command(command_params=command_params, repo=repo, db_conn=db_conn, command_details=command_details)
         return result
 
     except CommandParsingException as e:
