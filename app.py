@@ -10,7 +10,7 @@ import command_parser
 import requests
 import sqlite3
 
-from config import SLACK_AUTH_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET
+from config import DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET
 
 from flask import request
 from flask import g
@@ -24,7 +24,6 @@ from models.slack_command import SlackCommand
     Written by Adam Rehill and Adam Krieger, 2016
 """
 app = FlaskAPI(__name__)
-DB_PATH = '/var/pollease.db'
 repo = PollsRepository(DB_PATH)
 
 @app.route('/authorize', methods=['GET'])
@@ -56,7 +55,9 @@ def pollease():
         command, command_params = command_parser.parse_pollease_command(command_text)
 
         db_conn = get_db()
-        result = command(command_params=command_params, repo=repo, db_conn=db_conn, command_details=command_details)
+        result = command(command_params=command_params, repo=repo, db_conn=db_conn, \
+        command_details=command_details)
+
         return result
 
     except CommandParsingException as e:
