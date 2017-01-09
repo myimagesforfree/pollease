@@ -1,1 +1,1 @@
-docker build -t pollease .
+docker build --force-rm -t pollease:latest .
