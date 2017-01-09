@@ -7,17 +7,17 @@
 
 import sqlite3
 from papertrail import logger
-from db_constants import SQL_CREATE_POLL_OPTIONS_TABLE, SQL_CREATE_POLLS_TABLE, \
-SQL_CREATE_VOTES_TABLE, SQL_CREATE_POLL, SQL_FETCH_POLL
+from db_constants import *
+from models.poll import Poll
 
-def get_connection():
-    return sqlite3.connect(':memory:')
+def get_connection(db_path):
+    return sqlite3.connect(db_path)
 
-class PollsRepository():
+class PollsRepository(object):
 
-    def __init__(self):
+    def __init__(self, db_path):
         try:
-            self.conn = get_connection()
+            self.conn = get_connection(db_path)
             self.build_db()
             logger.info("Successfully initialized sqlite3 in-memory database.")
         except sqlite3.Error as e:
@@ -29,12 +29,12 @@ class PollsRepository():
         self.conn.execute(SQL_CREATE_VOTES_TABLE)
         self.conn.commit()
 
-    def create_poll(self, poll):
+    def create_poll(self, db_conn, poll):
         try:
-            self.conn.execute(SQL_CREATE_POLL % (poll.id, poll.team_id, poll.channel_id, \
+            db_conn.execute(SQL_CREATE_POLL % (poll.poll_id, poll.team_id, poll.channel_id, \
             poll.name, poll.is_open, poll.owner_user_id))
-            self.conn.commit()
-            logger.info("Successfully inserted poll " + poll.id + " into the database.")
+            db_conn.commit()
+            logger.info("Successfully inserted poll " + poll.poll_id + " into the database.")
         except sqlite3.Error as e:
             logger.info("Error inserting poll into the database. " + str(e))
 
@@ -47,19 +47,29 @@ class PollsRepository():
                 poll = Poll(row[0], row[1], row[2], row[3], row[4], row[5])
 
 
-            logger.info("Successfully retrieved poll " + poll.id + " from the database.")
+            logger.info("Successfully retrieved poll " + poll.poll_id + " from the database.")
 
             return poll
         except sqlite3.Error as e:
             logger.info("Error retrieving poll " + poll.id + " from the database. " + str(e))
             return None
 
-class Poll():
-    def __init__(self, poll_id, team_id, channel_id, name, is_open, owner_user_id):
-        self.id = poll_id
-        self.team_id = team_id
-        self.channel_id = channel_id
-        self.name = name
-        self.is_open = is_open
-        self.owner_user_id = owner_user_id
+    def select_first_poll(self, db_conn):
+        cursor = db_conn.execute(SQL_FETCH_POLL_TOP1)
 
+        if not cursor:
+            return None
+        else:
+            poll = None
+            for row in cursor:
+                poll = Poll(row[0], row[1], row[2], row[3], row[4], row[5])
+            return poll
+
+    def __run_sql(self, sql):
+        try:
+            cursor = self.conn.execute(sql)
+
+            return cursor
+        except sqlite3.Error as e:
+            logger.info("SQL Error " + str(e))
+            return None

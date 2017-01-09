@@ -26,3 +26,5 @@ SQL_CREATE_VOTES_TABLE = """CREATE TABLE IF NOT EXISTS votes (
 SQL_CREATE_POLL = "INSERT INTO polls VALUES ('%s', '%s', '%s', '%s', %d, '%s');"
 
 SQL_FETCH_POLL = "SELECT * FROM polls WHERE id='%s' LIMIT 1;"
+
+SQL_FETCH_POLL_TOP1 = "SELECT * FROM polls LIMIT 1;"
