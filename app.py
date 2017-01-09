@@ -49,7 +49,6 @@ def pollease():
     command_text = request.form["text"]
 
     command_details = SlackCommand(request.form)
-    logger.info(request.form)
 
     try:
         command, command_params = command_parser.parse_pollease_command(command_text)
@@ -71,7 +70,6 @@ def interactive():
 @app.errorhandler(Exception)
 def handle_error(exception):
     """Outer exception handler."""
-    print exception
     logger.error("An exception occurred: " + repr(exception))
     logger.error(traceback.format_exc())
 
@@ -97,3 +95,4 @@ def close_connection(exception):
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+
