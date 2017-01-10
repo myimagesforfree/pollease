@@ -9,7 +9,7 @@ from models.poll import Poll, PollChoice
 from papertrail import logger
 from custom_exceptions import PolleaseException
 
-def create_poll(command_params, repo, db_conn, command_details):
+def create_poll(repo, db_conn, command_details):
     """Creates a new poll, assuming that one isn't already in progress."""
 
     poll_name, raw_poll_choices = command_parser.parse_create_command(command_params)
