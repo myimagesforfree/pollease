@@ -29,3 +29,4 @@ class PollChoice(object):
         self.choice_id = choice_id
         self.name = name
 
+

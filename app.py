@@ -4,20 +4,19 @@
 """
 # pylint: disable=I0011,C0103
 
+import sqlite3
 import traceback
-from command_parser import CommandParsingException
+
 import command_parser
 import requests
-import sqlite3
-
-from config import DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET
-
-from flask import request
-from flask import g
+from config import (DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID,
+                    SLACK_CLIENT_SECRET)
+from custom_exceptions import CommandParsingException
+from flask import g, request
 from flask_api import FlaskAPI
+from models.slack_command import SlackCommand
 from papertrail import logger
 from polls_repository import PollsRepository
-from models.slack_command import SlackCommand
 
 """
     pollease - A Slack poll integration.
@@ -95,4 +94,3 @@ def close_connection(exception):
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
-

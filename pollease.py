@@ -1,50 +1,56 @@
 """
     Pollease Action Central
 """
-import command_parser
-from models.poll import Poll, PollChoice
-
-from constants import ERR_POLL_ALREADY_IN_PROGRESS, ERR_NO_POLL_IN_PROGRESS
-
-from papertrail import logger
 import uuid
+
+import command_parser
+from constants import ERR_NO_POLL_IN_PROGRESS, ERR_POLL_ALREADY_IN_PROGRESS
+from models.poll import Poll, PollChoice
+from papertrail import logger
+from custom_exceptions import PolleaseException
 
 def create_poll(command_params, repo, db_conn, command_details):
     """Creates a new poll, assuming that one isn't already in progress."""
 
     poll_name, raw_poll_choices = command_parser.parse_create_command(command_params)
-    current_poll = repo.select_first_poll(db_conn)
+    current_poll = repo.fetch_first_poll(db_conn)
+    try:
+        if current_poll is None:
+            logger.info("Creating poll for %s.%s.%s: %s", command_details.team_domain, \
+                command_details.channel_name, command_details.user_name, poll_name)
 
-    if current_poll is None:
-        logger.info("Creating poll for %s.%s.%s: %s", command_details.team_domain, \
-            command_details.channel_name, command_details.user_name, poll_name)
+            poll_choices = []
+            for choice in raw_poll_choices:
+                poll_choices.append(PollChoice(str(uuid.uuid4()), choice))
 
-        poll_choices = []
-        for choice in raw_poll_choices:
-            poll_choices.append(PollChoice(str(uuid.uuid4()), choice))
+            new_poll = Poll(str(uuid.uuid4()), command_details.team_domain, \
+            command_details.channel_id, poll_name, True, command_details.user_id, poll_choices)
 
-        new_poll = Poll(str(uuid.uuid4()), command_details.team_domain, \
-        command_details.channel_id, poll_name, True, command_details.user_id, poll_choices)
+            repo.persist_poll(db_conn, new_poll)
 
-        persisted_poll = repo.persist_poll(db_conn, new_poll)
+            return generate_new_poll_response(new_poll)
+        else:
+            logger.info("Failed to create poll: " + poll_name + \
+            ". Another poll is already in progress.")
+            return generate_return_message(ERR_POLL_ALREADY_IN_PROGRESS)
+    except PolleaseException as e:
+        return generate_return_message(str(e))
 
-        return generate_new_poll_response(persisted_poll)
-    else:
-        logger.info("Failed to create poll: " + poll_name + \
-        ". Another poll is already in progress.")
-        return generate_return_message(ERR_POLL_ALREADY_IN_PROGRESS)
 
-def close_poll(command_params, repo, db_conn, command_details):
+def close_poll(command_params, repo, db_conn):
     """Closes the current poll."""
-    current_poll = repo.select_first_poll(db_conn)
+    try:
+        current_poll = repo.select_first_poll(db_conn)
 
-    if current_poll is None:
-        return generate_return_message(ERR_NO_POLL_IN_PROGRESS)
-    else:
-        poll_name = current_poll.get("text")
-        logger.info("Closing poll: " + poll_name)
+        if current_poll is None:
+            return generate_return_message(ERR_NO_POLL_IN_PROGRESS)
+        else:
+            poll_name = current_poll.get("text")
+            logger.info("Closing poll: " + poll_name)
 
-        return generate_return_message("Poll: '" + poll_name + "' has now been closed.")
+            return generate_return_message("Poll: '" + poll_name + "' has now been closed.")
+    except PolleaseException as e:
+        return generate_return_message(str(e))
 
 def generate_new_poll_response(poll):
     """Generates the message object for a pretty Slack message."""

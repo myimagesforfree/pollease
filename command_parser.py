@@ -4,6 +4,7 @@
 import shlex
 
 from constants import COMMAND_CLOSE, COMMAND_CREATE, ERR_PARSING_COMMAND, VALID_COMMANDS
+from custom_exceptions import CommandParsingException
 from pollease import create_poll, close_poll
 
 def parse_pollease_command(command_text):
@@ -31,7 +32,3 @@ def parse_create_command(command_params):
     """ Parses the vote options out of a create command."""
     poll_name = command_params.pop(0)
     return poll_name, command_params
-
-class CommandParsingException(Exception):
-    """Custom exception for command parse failures."""
-    pass

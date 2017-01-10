@@ -27,8 +27,12 @@ SQL_PERSIST_POLL = "INSERT INTO polls VALUES ('%s', '%s', '%s', '%s', %d, '%s');
 
 SQL_PERSIST_POLL_CHOICES = "INSERT INTO poll_choices VALUES ('%s', '%s', '%s');"
 
+SQL_PERSIST_VOTE = "INSERT INTO votes VALUES ('%s', '%s', '%s');"
+
 SQL_FETCH_POLL = "SELECT * FROM polls WHERE id='%s' LIMIT 1;"
 
 SQL_FETCH_POLL_TOP1 = "SELECT * FROM polls LIMIT 1;"
 
 SQL_FETCH_POLL_CHOICES = "SELECT * FROM poll_choices WHERE poll_id='%s';"
+
+SQL_FETCH_POLL_VOTES = "SELECT * FROM votes WHERE poll_id='%s' LIMIT 1;"
