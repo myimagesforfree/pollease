@@ -46,16 +46,14 @@ def authorize():
 @app.route('/pollease', methods=['POST'])
 def pollease():
     """Main command router for pollease actions."""
-    command_text = request.form["text"]
 
     command_details = SlackCommand(request.form)
 
     try:
-        command, command_params = command_parser.parse_pollease_command(command_text)
+        command = command_parser.parse_pollease_command(command_details.text)
 
         db_conn = get_db()
-        result = command(command_params=command_params, repo=repo, db_conn=db_conn, \
-        command_details=command_details)
+        result = command(repo=repo, db_conn=db_conn, command_details=command_details)
 
         return result
 

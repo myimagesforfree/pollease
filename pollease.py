@@ -9,10 +9,11 @@ from constants import ERR_POLL_ALREADY_IN_PROGRESS, ERR_NO_POLL_IN_PROGRESS
 from papertrail import logger
 import uuid
 
-def create_poll(command_params, repo, db_conn, command_details):
+def create_poll(repo, db_conn, command_details):
     """Creates a new poll, assuming that one isn't already in progress."""
 
-    poll_name, raw_poll_choices = command_parser.parse_create_command(command_params)
+
+    poll_name, raw_poll_choices = command_parser.parse_create_command(command_details.text)
     current_poll = repo.select_first_poll(db_conn)
 
     if current_poll is None:
@@ -34,7 +35,7 @@ def create_poll(command_params, repo, db_conn, command_details):
         ". Another poll is already in progress.")
         return generate_return_message(ERR_POLL_ALREADY_IN_PROGRESS)
 
-def close_poll(command_params, repo, db_conn, command_details):
+def close_poll(repo, db_conn, command_details):
     """Closes the current poll."""
     current_poll = repo.select_first_poll(db_conn)
 
