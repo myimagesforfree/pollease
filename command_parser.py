@@ -25,7 +25,8 @@ def parse_pollease_command(command_text):
 def parse_create_command(command_text):
     """ Parses the vote options out of a create command."""
     params = __deserialize_text(command_text)
-    poll_name = params.pop(0)
+    params.pop(0) #Command
+    poll_name = params.pop(0) #Pollname
     return poll_name, params
 
 def __deserialize_text(command_text):

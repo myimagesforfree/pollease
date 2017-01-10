@@ -62,8 +62,14 @@ def pollease():
 
 @app.route('/interactive', methods=['POST'])
 def interactive():
-    """A test endpoint."""
+    """Slack Interaction, for example when a user clicks a vote button."""
     logger.info("WOOHOO!")
+    logger.info(request.form)
+
+    return {
+        'text': "Received, but we haven't done anything with it.",
+        'replace_original': False
+    }
 
 @app.errorhandler(Exception)
 def handle_error(exception):
