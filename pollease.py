@@ -12,7 +12,7 @@ from custom_exceptions import PolleaseException
 def create_poll(repo, db_conn, command_details):
     """Creates a new poll, assuming that one isn't already in progress."""
 
-    poll_name, raw_poll_choices = command_parser.parse_create_command(command_params)
+    poll_name, raw_poll_choices = command_parser.parse_create_command(command_details.text)
     current_poll = repo.fetch_first_poll(db_conn)
     try:
         if current_poll is None:
