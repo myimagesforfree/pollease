@@ -1,0 +1,1 @@
+docker run -it -p 7001:8080 --rm --name pollease-test_instance pollease-test
