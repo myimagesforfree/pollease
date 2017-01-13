@@ -62,7 +62,6 @@ def pollease():
 @app.route('/interactive', methods=['POST'])
 def interactive():
     """Slack Interaction, for example when a user clicks a vote button."""
-    logger.info("WOOHOO!")
     logger.info(request.form)
 
     return {

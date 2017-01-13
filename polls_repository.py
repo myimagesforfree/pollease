@@ -1,11 +1,12 @@
 """
     I0011 - inline pylint disables
     C0103 - variables should b named in constants convention
+    W1202 - The % format is officially obsolete.
 """
-# pylint: disable=I0011,C0103,C0111
+# pylint: disable=I0011,C0103,C0111,W1202
 
 import sqlite3
-
+import arrow
 from custom_exceptions import PolleaseException
 from db_constants import *
 from constants import *
@@ -35,8 +36,13 @@ class PollsRepository(object):
     def persist_poll(self, db_conn, poll):
         """Persists a poll object to the polls table"""
         try:
-            db_conn.execute(SQL_PERSIST_POLL % (poll.poll_id, poll.team_id, poll.channel_id, \
-            poll.name, poll.is_open, poll.owner_user_id))
+            logger.info("Persisting poll {0}. Team: {1} Channel: {2} Expires: {3}".format( \
+                poll.poll_id, poll.team_id, poll.channel_id, arrow.get(poll.date_close)))
+
+            sql = SQL_PERSIST_POLL.format(poll.poll_id, \
+                poll.team_id, poll.team_domain, poll.channel_id, poll.channel_name, \
+                poll.name, poll.date_open, poll.date_close, poll.owner_user_id)
+            db_conn.execute(sql)
 
             self.persist_poll_choices(db_conn, poll)
             db_conn.commit()
@@ -69,8 +75,7 @@ class PollsRepository(object):
             poll = None
             #Should only be one row in the cursor due to the limit
             for row in cursor:
-                poll = Poll(row[0], row[1], row[2], row[3], row[4], row[5], \
-                self.fetch_poll_choices(db_conn, poll_id))
+                poll = self.__poll_from_row(db_conn, row)
 
             return poll
         except sqlite3.Error as e:
@@ -97,12 +102,30 @@ class PollsRepository(object):
             else:
                 poll = None
                 for row in cursor:
-                    poll = Poll(row[0], row[1], row[2], row[3], row[4], row[5], \
-                    self.fetch_poll_choices(db_conn, row[0]))
+                    poll = self.__poll_from_row(db_conn, row)
                 return poll
         except sqlite3.Error as e:
             logger.info("Error retrieving first poll from the database. " + str(e))
             raise PolleaseException(ERR_FETCHING_POLL)
+
+    def fetch_poll_by_channel(self, db_conn, team_id, channel_id, now):
+        """Fetches the poll by team_id and channel_id.
+            Assumes one poll per channel."""
+        poll = None
+
+        logger.info("Trying to fetch for {0}.{1} at {2}".format( \
+            team_id, channel_id, now))
+
+        try:
+            sql = SQL_FETCH_OPEN_POLL_BY_CHANNEL.format(team_id, channel_id, now)
+            cursor = db_conn.execute(sql)
+            for row in cursor:
+                poll = self.__poll_from_row(db_conn, row)
+        except sqlite3.Error as e:
+            logger.info("Error retrieving poll from the database. " + str(e))
+            raise PolleaseException(ERR_FETCHING_POLL)
+
+        return poll
 
     def fetch_poll_votes(self, db_conn, poll_id):
         """Fetches the poll_votes from the votes table. Returns a list dictionary of \
@@ -125,11 +148,23 @@ class PollsRepository(object):
             " from the database. " + str(e))
             raise PolleaseException(ERR_FETCHING_POLL_VOTES)
 
-    def __run_sql(self, sql):
+    def update_poll(self, db_conn, poll):
+        """Updates the poll in the database with the given values."""
+        sql = SQL_UPDATE_POLL.format(poll.poll_id, poll.date_close)
+
+        db_conn.execute(sql)
+        db_conn.commit()
+
+    def __run_sql(self, sql, custom_error):
         try:
             cursor = self.conn.execute(sql)
 
             return cursor
         except sqlite3.Error as e:
             logger.info("SQL Error " + str(e))
-            raise PolleaseException(ERR_UNKNOWN)
+            raise PolleaseException(custom_error)
+
+    def __poll_from_row(self, db_conn, row):
+        return Poll(row[0], row[1], row[2], row[3], row[4], row[5], \
+                row[6], row[7], row[8], \
+                self.fetch_poll_choices(db_conn, row[0]))
