@@ -7,6 +7,7 @@
 import sqlite3
 import traceback
 
+import json
 import command_parser
 import requests
 from config import (DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID,
@@ -17,6 +18,7 @@ from flask_api import FlaskAPI
 from models.slack_command import SlackCommand
 from papertrail import logger
 from polls_repository import PollsRepository
+from pollease import cast_vote, generate_return_message
 
 """
     pollease - A Slack poll integration.
@@ -62,24 +64,23 @@ def pollease():
 @app.route('/interactive', methods=['POST'])
 def interactive():
     """Slack Interaction, for example when a user clicks a vote button."""
-    logger.info(request.form)
+    logger.info(request.form.get("payload"))
+    params = json.loads(request.form.get("payload"))
 
-    return {
-        'text': "Received, but we haven't done anything with it.",
-        'replace_original': False
-    }
+    voter_user_id = params.get("user").get("id")
+    action_dict = params.get("actions")[0]
+
+    vote_values = action_dict.get("value").split()
+    poll_id, poll_choice_id = vote_values[0], vote_values[1]
+
+    db_conn = get_db()
+    return cast_vote(repo, db_conn, poll_id, poll_choice_id, voter_user_id)
 
 @app.errorhandler(Exception)
 def handle_error(exception):
     """Outer exception handler."""
     logger.error("An exception occurred: " + repr(exception))
     logger.error(traceback.format_exc())
-
-def generate_return_message(message):
-    """Generates an object that will render text back to the Slack channel."""
-    return {
-        "text": message
-        }
 
 def get_db():
     """Creates a database connection for use with this request flight."""

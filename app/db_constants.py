@@ -32,7 +32,7 @@ SQL_PERSIST_POLL = """INSERT INTO polls VALUES ('{0}', '{1}', '{2}', '{3}', '{4}
 
 SQL_PERSIST_POLL_CHOICES = "INSERT INTO poll_choices VALUES ('%s', '%s', '%s');"
 
-SQL_PERSIST_VOTE = "INSERT INTO votes VALUES ('%s', '%s', '%s');"
+SQL_PERSIST_POLL_VOTE = "INSERT INTO votes VALUES ('%s', '%s', '%s');"
 
 SQL_FETCH_POLL = "SELECT * FROM polls WHERE id='%s' LIMIT 1;"
 
@@ -47,6 +47,12 @@ SQL_FETCH_POLL_TOP1 = "SELECT * FROM polls LIMIT 1;"
 SQL_FETCH_POLL_CHOICES = "SELECT * FROM poll_choices WHERE poll_id='%s';"
 
 SQL_FETCH_POLL_VOTES = "SELECT * FROM votes WHERE poll_id='%s' LIMIT 1;"
+
+SQL_FETCH_POLL_VOTE_BY_POLL_AND_USER = "SELECT choice_id FROM votes WHERE poll_id='%s' \
+ AND voter_user_id='%s' LIMIT 1;"
+
+SQL_UPDATE_POLL_VOTE = "UPDATE votes SET choice_id='%s' WHERE poll_id='%s' \
+ AND voter_user_id='%s';"
 
 SQL_UPDATE_POLL = """UPDATE polls
     SET date_close = {1}

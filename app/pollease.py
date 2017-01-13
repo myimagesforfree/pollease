@@ -78,6 +78,19 @@ def close_poll(repo, db_conn, command_details):
     except PolleaseException as pex:
         return generate_return_message(str(pex))
 
+def cast_vote(repo, db_conn, poll_id, poll_choice_id, voter_user_id):
+    """Casts vote for poll"""
+    try:
+        repo.persist_vote(db_conn, poll_id, poll_choice_id, voter_user_id)
+
+        msg_options = {
+            "replace_original": False
+        }
+
+        return generate_return_message("Your vote has been received", msg_options)
+    except PolleaseException as pex:
+        return generate_return_message(str(pex))
+
 def generate_new_poll_response(poll):
     """Generates the message object for a pretty Slack message."""
     attachments = []
@@ -96,7 +109,7 @@ def generate_new_poll_response(poll):
                         "name": "vote",
                         "text": "Vote",
                         "type": "button",
-                        "value": "false"
+                        "value": poll.poll_id + " " + choice.choice_id
                     }
                 ]
             }
@@ -104,14 +117,21 @@ def generate_new_poll_response(poll):
 
     current_poll = {
         "text": poll.name,
-        "attachments": attachments,
-        "response_url": "--update-to-interactive-message-url--"
+        "attachments": attachments
     }
 
     return current_poll
 
-def generate_return_message(message):
-    """Creates object for helpful Slack message."""
-    return {
+def generate_return_message(message, options=None):
+    """Generates an object that will render text back to the Slack channel.
+     Optional Options dictionary will include any options for the message
+     such as color, replace original, etc."""
+
+    msg = {
         "text": message
-        }
+    }
+
+    if options is not None:
+        msg.update(options)
+
+    return msg

@@ -60,11 +60,19 @@ class PollsRepository(object):
     def persist_vote(self, db_conn, poll_id, poll_choice_id, voter_user_id):
         """Persists a vote to the votes table"""
         try:
-            db_conn.execute(SQL_PERSIST_VOTE % (poll_id, poll_choice_id, voter_user_id))
-            db_conn.commit()
+            previous_vote = self.fetch_vote_for_poll_and_user(db_conn, poll_id, voter_user_id)
+
+            if previous_vote is None:
+                db_conn.execute(SQL_PERSIST_POLL_VOTE % (poll_id, poll_choice_id, voter_user_id))
+                db_conn.commit()
+            else:
+                db_conn.execute(SQL_UPDATE_POLL_VOTE % (poll_choice_id, poll_id, voter_user_id))
+                db_conn.commit()
+
         except sqlite3.Error as e:
             logger.info("Error inserting vote for poll: " + poll_id + " poll_choice_id: " \
-             + poll_choice_id + " voter_user_id: " + voter_user_id + " into the database.")
+             + poll_choice_id + " voter_user_id: " + voter_user_id + " into the database. " \
+             + str(e))
             raise PolleaseException(ERR_CREATING_VOTE)
 
     def fetch_poll(self, db_conn, poll_id):
@@ -146,6 +154,22 @@ class PollsRepository(object):
         except sqlite3.Error as e:
             logger.info("Error retrieving poll_votes for poll " + poll_id + \
             " from the database. " + str(e))
+            raise PolleaseException(ERR_FETCHING_POLL_VOTES)
+
+    def fetch_vote_for_poll_and_user(self, db_conn, poll_id, voter_user_id):
+        """Returns the poll_choice_id (vote) for a poll_id and voter_user_id"""
+        try:
+            cursor = db_conn.execute(SQL_FETCH_POLL_VOTE_BY_POLL_AND_USER % \
+             (poll_id, voter_user_id))
+
+            poll_choice_id = None
+            for row in cursor:
+                poll_choice_id = row[0]
+
+            return poll_choice_id
+        except sqlite3.Error as e:
+            logger.info("Error retrieving vote for poll " + poll_id + \
+            " user_id: " + voter_user_id + " from the database. " + str(e))
             raise PolleaseException(ERR_FETCHING_POLL_VOTES)
 
     def update_poll(self, db_conn, poll):
