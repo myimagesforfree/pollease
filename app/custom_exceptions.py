@@ -1,3 +1,5 @@
+"""Custom Exceptions for Pollease."""
+
 class CommandParsingException(Exception):
     """Custom exception for command parse failures."""
     pass

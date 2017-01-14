@@ -3,12 +3,14 @@
 """
 import uuid
 import arrow
+
+from app.constants import ERR_NO_POLL_IN_PROGRESS, ERR_POLL_ALREADY_IN_PROGRESS
+from app.papertrail import logger
+from app.custom_exceptions import PolleaseException
+from app.slack_formatting import generate_return_message
+
 from .command_parser import parse_create_command
-from .constants import ERR_NO_POLL_IN_PROGRESS, ERR_POLL_ALREADY_IN_PROGRESS
 from .models.poll import Poll, PollChoice
-from .papertrail import logger
-from .custom_exceptions import PolleaseException
-from .slack_formatting import generate_return_message
 
 # pylint: disable=I0011,W1202
 

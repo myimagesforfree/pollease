@@ -7,11 +7,13 @@
 
 import sqlite3
 import arrow
-from custom_exceptions import PolleaseException
-from db_constants import *
-from constants import *
-from models.poll import Poll, PollChoice
-from papertrail import logger
+
+from app.custom_exceptions import PolleaseException
+from app.constants import *
+from app.pollease.models.poll import Poll, PollChoice
+from app.papertrail import logger
+
+from .db_constants import *
 
 def get_connection(db_path):
     return sqlite3.connect(db_path)
