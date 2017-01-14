@@ -48,6 +48,7 @@ def authorize():
 def pollease():
     """Main command router for pollease actions."""
 
+    logger.info(request.form)
     command_details = SlackCommand(request.form)
 
     try:

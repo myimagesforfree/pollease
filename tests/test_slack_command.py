@@ -5,6 +5,7 @@
 # pylint: disable=I0011,C0111
 
 import unittest2
+from werkzeug.datastructures import MultiDict
 
 from app.models.slack_command import SlackCommand
 
@@ -12,16 +13,18 @@ class TestParsing(unittest2.TestCase):
 
     def test_sample_slack_form_data(self):
 
-        sample = """token=TOKENNNNNN&team_id=T3F55CL14&team_domain=swedishchefs&
-channel_id=C3F55CNDC&channel_name=general&user_id=U3DQ62P5X&user_name=adam.rehill&
-command=%2Fpollease&text=what+up+bjorkerz&
-response_url=https%3A%2F%2Fhooks.slack.com%2Fcommands%2FT3GARBAGEFJuO0taWFevCp"""
+        sample = MultiDict([('user_id', u'U3EEPPWEN'), ('response_url', \
+            u'https://hooks.slack.com/commands/T3F55CL14/127584780323/6D8ueUmxGdA2mUUk16vykCpf'), \
+            ('text', u'create mypoll \u201coption 1\u201d \u201coption 2"'), \
+            ('token', u'qy8cU27iplKPHIQQhK1hrFcK'), \
+            ('channel_id', u'C3F55CNDC'), ('team_id', u'T3F55CL14'), ('command', u'/pollease'), \
+            ('team_domain', u'swedishchefs'), ('user_name', u'adamkrieger'), \
+            ('channel_name', u'general')])
 
         res = SlackCommand(sample)
 
-        self.assertEqual(
-            res.command, 'pollease'
-        )
+        self.assertEqual(res.command, '/pollease')
+        self.assertEqual(res.team_domain, 'swedishchefs')
 
 if __name__ == '__main__':
     unittest2.main()
