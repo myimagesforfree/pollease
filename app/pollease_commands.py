@@ -3,18 +3,19 @@
 """
 import uuid
 import arrow
-import command_parser
-from constants import ERR_NO_POLL_IN_PROGRESS, ERR_POLL_ALREADY_IN_PROGRESS
-from models.poll import Poll, PollChoice
-from papertrail import logger
-from custom_exceptions import PolleaseException
+from .command_parser import parse_create_command
+from .constants import ERR_NO_POLL_IN_PROGRESS, ERR_POLL_ALREADY_IN_PROGRESS
+from .models.poll import Poll, PollChoice
+from .papertrail import logger
+from .custom_exceptions import PolleaseException
+from .slack_formatting import generate_return_message
 
 # pylint: disable=I0011,W1202
 
 def create_poll(repo, db_conn, command_details):
     """Creates a new poll, assuming that one isn't already in progress."""
 
-    poll_name, raw_poll_choices = command_parser.parse_create_command(command_details.text)
+    poll_name, raw_poll_choices = parse_create_command(command_details.text)
 
     now = arrow.utcnow().timestamp
 
@@ -121,17 +122,3 @@ def generate_new_poll_response(poll):
     }
 
     return current_poll
-
-def generate_return_message(message, options=None):
-    """Generates an object that will render text back to the Slack channel.
-     Optional Options dictionary will include any options for the message
-     such as color, replace original, etc."""
-
-    msg = {
-        "text": message
-    }
-
-    if options is not None:
-        msg.update(options)
-
-    return msg

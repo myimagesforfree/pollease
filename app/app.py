@@ -4,21 +4,22 @@
 """
 # pylint: disable=I0011,C0103
 
+from flask import g, request
+from flask_api import FlaskAPI
+
 import sqlite3
 import traceback
 
 import json
-import command_parser
 import requests
-from config import (DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID,
-                    SLACK_CLIENT_SECRET)
-from custom_exceptions import CommandParsingException
-from flask import g, request
-from flask_api import FlaskAPI
-from models.slack_command import SlackCommand
-from papertrail import logger
-from polls_repository import PollsRepository
-from pollease import cast_vote, generate_return_message
+
+from .config import DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID, \
+                    SLACK_CLIENT_SECRET
+from .models.slack_command import SlackCommand
+from .papertrail import logger
+from .polls_repository import PollsRepository
+from .pollease_commands import cast_vote
+from .command_router import route_pollease_command
 
 """
     pollease - A Slack poll integration.
@@ -49,18 +50,15 @@ def pollease():
     """Main command router for pollease actions."""
 
     logger.info(request.form)
-    command_details = SlackCommand(request.form)
 
-    try:
-        command = command_parser.parse_pollease_command(command_details.text)
+    slack_command = SlackCommand(request.form)
 
-        db_conn = get_db()
-        result = command(repo=repo, db_conn=db_conn, command_details=command_details)
+    command = route_pollease_command(slack_command.text)
+    db_conn = get_db()
 
-        return result
+    result = command(repo=repo, db_conn=db_conn, command_details=slack_command)
 
-    except CommandParsingException as e:
-        return generate_return_message(str(e))
+    return result
 
 @app.route('/interactive', methods=['POST'])
 def interactive():
