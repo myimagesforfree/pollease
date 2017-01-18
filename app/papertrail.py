@@ -8,7 +8,7 @@
 import socket
 from logging.handlers import logging, SysLogHandler
 
-from .config import PAPERTRAIL_PORT, PAPERTRAIL_SERVER
+from config import PAPERTRAIL_PORT, PAPERTRAIL_SERVER
 
 class ContextFilter(logging.Filter):
     hostname = socket.gethostname()

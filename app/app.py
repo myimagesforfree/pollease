@@ -13,13 +13,13 @@ import traceback
 import json
 import requests
 
-from .config import DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID, \
+from config import DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID, \
                     SLACK_CLIENT_SECRET
-from .models.slack_command import SlackCommand
-from .papertrail import logger
-from .db.polls_repository import PollsRepository
-from .pollease.pollease_commands import cast_vote
-from .pollease.command_router import route_pollease_command
+from slack_command import SlackCommand
+from papertrail import logger
+from polls_repository import PollsRepository
+from pollease_commands import cast_vote
+from command_router import route_pollease_command
 
 """
     pollease - A Slack poll integration.
@@ -97,3 +97,5 @@ def close_connection(exception):
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
+    print "Pollease started successfully"
+    
