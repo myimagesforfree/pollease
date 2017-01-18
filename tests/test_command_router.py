@@ -6,8 +6,8 @@
 
 import unittest2
 
-from app.pollease.command_router import route_pollease_command
-from app.pollease.pollease_commands import create_poll
+from app.resources.command_router import route_pollease_command
+from app.resources.pollease_commands import create_poll
 
 class TestParsing(unittest2.TestCase):
 

@@ -1,29 +1,21 @@
 """
     I0011 - inline pylint disables
     C0103 - variables should b named in constants convention
+    W0403 - relative imports
 """
-# pylint: disable=I0011,C0103
+# pylint: disable=I0011,C0103,W0403
 
-import traceback
-
+from api.pollease_api import pollease_api
 from flask import g, request
 from flask_api import FlaskAPI
-from pollease.papertrail import logger
-from pollease.api.pollease_api import pollease_api
 
 """
     pollease - A Slack poll integration.
     Written by Adam Rehill and Adam Krieger, 2016
 """
+
 app = FlaskAPI(__name__)
 app.register_blueprint(pollease_api)
-
-@app.errorhandler(Exception)
-def handle_error(exception):
-    """Outer exception handler."""
-    logger.error("An exception occurred: " + repr(exception))
-    logger.error(traceback.format_exc())
-
 
 @app.teardown_appcontext
 def close_connection(exception):
@@ -33,6 +25,5 @@ def close_connection(exception):
         db.close()
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
-    print "Pollease started successfully"
-    
+    print "\nStarting pollease flask server...logging will now appear in papertrail"
+    app.run(debug=True, host='0.0.0.0', port=8080, use_reloader=False)

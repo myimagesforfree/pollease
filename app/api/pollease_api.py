@@ -6,19 +6,20 @@
 
 import json
 import sqlite3
+import traceback
 
 import requests
 from flask import Blueprint, g, request
 from flask_api import FlaskAPI
-from pollease.command_router import route_pollease_command
-from pollease.config import (DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID,
-                             SLACK_CLIENT_SECRET)
-from pollease.papertrail import logger
-from pollease.pollease_commands import cast_vote
-from pollease.polls_repository import PollsRepository
-from pollease.slack_command import SlackCommand
+from app.resources.command_router import route_pollease_command
+from app.resources.config import (DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET)
 
-repo = PollsRepository(DB_PATH)
+from app.resources.papertrail import logger
+from app.resources.pollease_commands import cast_vote
+from app.resources.pollease_repository import PolleaseRepository
+from app.resources.slack_command import SlackCommand
+
+repo = PolleaseRepository(DB_PATH)
 pollease_api = Blueprint('pollease_api', __name__)
 
 @pollease_api.route('/authorize', methods=['GET'])
@@ -67,6 +68,12 @@ def interactive():
 
     db_conn = get_db()
     return cast_vote(repo, db_conn, poll_id, poll_choice_id, voter_user_id)
+
+@pollease_api.errorhandler(Exception)
+def handle_error(exception):
+    """Outer exception handler."""
+    logger.error("An exception occurred: " + repr(exception))
+    logger.error(traceback.format_exc())
 
 def get_db():
     """Creates a database connection for use with this request flight."""

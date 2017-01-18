@@ -4,13 +4,13 @@
 import uuid
 import arrow
 
-from constants import ERR_NO_POLL_IN_PROGRESS, ERR_POLL_ALREADY_IN_PROGRESS
-from papertrail import logger
-from custom_exceptions import PolleaseException
-from slack_formatting import generate_return_message
+from .constants import ERR_NO_POLL_IN_PROGRESS, ERR_POLL_ALREADY_IN_PROGRESS
+from .papertrail import logger
+from .custom_exceptions import PolleaseException
+from .slack_formatting import generate_return_message
 
-from command_parser import parse_create_command
-from poll import Poll, PollChoice
+from .command_parser import parse_create_command
+from .poll import Poll, PollChoice
 
 # pylint: disable=I0011,W1202
 

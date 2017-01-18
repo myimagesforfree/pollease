@@ -1,10 +1,10 @@
 """Returns the expected function based on the command text."""
 
-from custom_exceptions import CommandParsingException
-from constants import VALID_COMMANDS, COMMAND_CLOSE, COMMAND_CREATE, ERR_PARSING_COMMAND
+from .custom_exceptions import CommandParsingException
+from .constants import VALID_COMMANDS, COMMAND_CLOSE, COMMAND_CREATE, ERR_PARSING_COMMAND
 
-from command_parser import __deserialize_text
-from pollease_commands import create_poll, close_poll
+from .command_parser import __deserialize_text
+from .pollease_commands import create_poll, close_poll
 
 def route_pollease_command(command_text):
     """

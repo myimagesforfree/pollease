@@ -8,17 +8,17 @@
 import sqlite3
 import arrow
 
-from custom_exceptions import PolleaseException
-from constants import *
-from poll import Poll, PollChoice
-from papertrail import logger
+from .custom_exceptions import PolleaseException
+from .constants import *
+from .poll import Poll, PollChoice
+from .papertrail import logger
 
-from db_constants import *
+from .db_constants import *
 
 def get_connection(db_path):
     return sqlite3.connect(db_path)
 
-class PollsRepository(object):
+class PolleaseRepository(object):
 
     def __init__(self, db_path):
         try:
