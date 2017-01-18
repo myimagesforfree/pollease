@@ -4,6 +4,11 @@
     W0403 - relative imports
 """
 # pylint: disable=I0011,C0103,W0403
+import os
+import sys
+
+# Used to solve issue with relative imports
+sys.path.insert(0, os.path.abspath(".."))
 
 from api.pollease_api import pollease_api
 from flask import g, request
@@ -17,6 +22,7 @@ from flask_api import FlaskAPI
 app = FlaskAPI(__name__)
 app.register_blueprint(pollease_api)
 
+# This must be present in this file as blueprint doesn't have teardown context
 @app.teardown_appcontext
 def close_connection(exception):
     """Closes the connection upon loss of context."""
