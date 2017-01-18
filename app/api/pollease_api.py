@@ -12,14 +12,14 @@ import requests
 from flask import Blueprint, g, request
 from flask_api import FlaskAPI
 from app.resources.command_router import route_pollease_command
-from app.resources.config import (DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID, SLACK_CLIENT_SECRET)
+from app.config.config import get_config
 
 from app.resources.papertrail import logger
 from app.resources.pollease_commands import cast_vote
 from app.resources.pollease_repository import PolleaseRepository
 from app.resources.slack_command import SlackCommand
 
-repo = PolleaseRepository(DB_PATH)
+repo = PolleaseRepository(get_config().get("DATABASE", "DB_PATH"))
 pollease_api = Blueprint('pollease_api', __name__)
 
 @pollease_api.route('/authorize', methods=['GET'])
@@ -28,9 +28,10 @@ def authorize():
     code = request.args.get('code')
 
     query_string = "?client_id=%s&client_secret=%s&code=%s" % \
-     (SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, code)
+     (get_config().get("SLACK", "SLACK_CLIENT_ID"), get_config().get("SLACK", \
+      "SLACK_CLIENT_SECRET"), code)
 
-    auth_request_url = SLACK_AUTH_URL + query_string
+    auth_request_url = get_config().get("SLACK", "SLACK_AUTH_URL") + query_string
 
     response_json = requests.post(auth_request_url).json()
 
@@ -79,5 +80,5 @@ def get_db():
     """Creates a database connection for use with this request flight."""
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DB_PATH)
+        db = g._database = sqlite3.connect(get_config().get("DATABASE", "DB_PATH"))
     return db

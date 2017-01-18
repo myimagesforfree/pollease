@@ -33,3 +33,4 @@ def close_connection(exception):
 if __name__ == '__main__':
     print "\nStarting pollease flask server...logging will now appear in papertrail"
     app.run(debug=True, host='0.0.0.0', port=8080, use_reloader=False)
+    app.config.from_object('config')
