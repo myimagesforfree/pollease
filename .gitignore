@@ -3,3 +3,4 @@
 .vscode/
 config_*.ini
 *.pyc
+add-to-slack.html
