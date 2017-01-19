@@ -1,5 +1,5 @@
 # IDEA config files
 .idea/
 .vscode/
-config_*.py
+config_*.ini
 *.pyc
