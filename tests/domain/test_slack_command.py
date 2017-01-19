@@ -7,7 +7,7 @@
 import unittest2
 from werkzeug.datastructures import MultiDict
 
-from app.resources.slack_command import SlackCommand
+from app.domain.slack_command import SlackCommand
 
 class TestParsing(unittest2.TestCase):
 

@@ -7,7 +7,7 @@
 
 import socket
 from logging.handlers import logging, SysLogHandler
-from app.config.config import get_config
+from app.config import get_config
 
 class ContextFilter(logging.Filter):
     hostname = socket.gethostname()

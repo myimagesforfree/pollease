@@ -12,12 +12,12 @@ import requests
 from flask import Blueprint, g, request
 from flask_api import FlaskAPI
 from app.resources.command_router import route_pollease_command
-from app.config.config import get_config
+from app.config import get_config
 
-from app.resources.papertrail import logger
+from app.resources.logger import logger
 from app.resources.pollease_commands import cast_vote
-from app.resources.pollease_repository import PolleaseRepository
-from app.resources.slack_command import SlackCommand
+from app.repo.pollease_repository import PolleaseRepository
+from app.domain.slack_command import SlackCommand
 
 repo = PolleaseRepository(get_config().get("DATABASE", "DB_PATH"))
 pollease_api = Blueprint('pollease_api', __name__)

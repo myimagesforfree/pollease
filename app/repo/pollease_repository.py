@@ -8,10 +8,10 @@
 import sqlite3
 import arrow
 
-from .custom_exceptions import PolleaseException
-from .constants import *
-from .poll import Poll, PollChoice
-from .papertrail import logger
+from app.domain.custom_exceptions import PolleaseException
+from app.domain.constants import *
+from app.domain.poll import Poll, PollChoice
+from app.resources.logger import logger
 
 from .db_constants import *
 
