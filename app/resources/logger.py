@@ -7,8 +7,7 @@
 
 import socket
 from logging.handlers import logging, SysLogHandler
-
-from config import PAPERTRAIL_PORT, PAPERTRAIL_SERVER
+from app.config import get_config
 
 class ContextFilter(logging.Filter):
     hostname = socket.gethostname()
@@ -23,7 +22,11 @@ logger.setLevel(logging.INFO)
 logging_filter = ContextFilter()
 logger.addFilter(logging_filter)
 
-syslog = SysLogHandler(address=(PAPERTRAIL_SERVER, PAPERTRAIL_PORT))
+server = get_config().get("LOGGING", "PAPERTRAIL_SERVER")
+port = int(get_config().get("LOGGING", "PAPERTRAIL_PORT"))
+
+syslog = SysLogHandler(address=(server, port))
+
 formatter = logging.Formatter('%(asctime)s POLLEASE: %(message)s', \
     datefmt='%b %d %H:%M:%S')
 

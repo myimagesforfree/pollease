@@ -1,15 +1,22 @@
-"""Configuration vars"""
-DB_PATH = ''
+"""
+    Manages global configuration for pollease.
+"""
 
-PAPERTRAIL_SERVER = ""
-PAPERTRAIL_PORT = 8080
+from ConfigParser import ConfigParser
 
-SLACK_AUTH_URL = "https://slack.com/api/oauth.access"
-SLACK_CLIENT_ID = ""
-SLACK_CLIENT_SECRET = ""
+LOCAL_CONFIG_FILE = '/usr/src/app/config_local.ini'
+PROD_CONFIG_FILE = '/usr/src/app/config.ini'
 
+import os
+def create_config():
+    """ Creates a config parser object from local config if present, or production config if not"""
+    print os.listdir(".")
+    parser = ConfigParser()
+    parser.read(LOCAL_CONFIG_FILE or PROD_CONFIG_FILE)
+    return parser
 
-try:
-    from config_local import *
-except ImportError as import_error:
-    pass
+CONFIG = create_config()
+
+def get_config():
+    """ Returns configuration """
+    return CONFIG

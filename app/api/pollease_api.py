@@ -4,39 +4,34 @@
 """
 # pylint: disable=I0011,C0103
 
-from flask import g, request
-from flask_api import FlaskAPI
-
+import json
 import sqlite3
 import traceback
 
-import json
 import requests
+from flask import Blueprint, g, request
+from flask_api import FlaskAPI
+from app.resources.command_router import route_pollease_command
+from app.config import get_config
 
-from config import DB_PATH, SLACK_AUTH_URL, SLACK_CLIENT_ID, \
-                    SLACK_CLIENT_SECRET
-from slack_command import SlackCommand
-from papertrail import logger
-from polls_repository import PollsRepository
-from pollease_commands import cast_vote
-from command_router import route_pollease_command
+from app.resources.logger import logger
+from app.resources.pollease_commands import cast_vote
+from app.repo.pollease_repository import PolleaseRepository
+from app.domain.slack_command import SlackCommand
 
-"""
-    pollease - A Slack poll integration.
-    Written by Adam Rehill and Adam Krieger, 2016
-"""
-app = FlaskAPI(__name__)
-repo = PollsRepository(DB_PATH)
+repo = PolleaseRepository(get_config().get("DATABASE", "DB_PATH"))
+pollease_api = Blueprint('pollease_api', __name__)
 
-@app.route('/authorize', methods=['GET'])
+@pollease_api.route('/authorize', methods=['GET'])
 def authorize():
     """Authorizes this app with the central Slack app store. """
     code = request.args.get('code')
 
     query_string = "?client_id=%s&client_secret=%s&code=%s" % \
-     (SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, code)
+     (get_config().get("SLACK", "SLACK_CLIENT_ID"), get_config().get("SLACK", \
+      "SLACK_CLIENT_SECRET"), code)
 
-    auth_request_url = SLACK_AUTH_URL + query_string
+    auth_request_url = get_config().get("SLACK", "SLACK_AUTH_URL") + query_string
 
     response_json = requests.post(auth_request_url).json()
 
@@ -45,7 +40,7 @@ def authorize():
     else:
         return "Error authorizing pollease for slack team."
 
-@app.route('/pollease', methods=['POST'])
+@pollease_api.route('/pollease', methods=['POST'])
 def pollease():
     """Main command router for pollease actions."""
 
@@ -60,7 +55,7 @@ def pollease():
 
     return result
 
-@app.route('/interactive', methods=['POST'])
+@pollease_api.route('/interactive', methods=['POST'])
 def interactive():
     """Slack Interaction, for example when a user clicks a vote button."""
     logger.info(request.form.get("payload"))
@@ -75,7 +70,7 @@ def interactive():
     db_conn = get_db()
     return cast_vote(repo, db_conn, poll_id, poll_choice_id, voter_user_id)
 
-@app.errorhandler(Exception)
+@pollease_api.errorhandler(Exception)
 def handle_error(exception):
     """Outer exception handler."""
     logger.error("An exception occurred: " + repr(exception))
@@ -85,17 +80,5 @@ def get_db():
     """Creates a database connection for use with this request flight."""
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DB_PATH)
+        db = g._database = sqlite3.connect(get_config().get("DATABASE", "DB_PATH"))
     return db
-
-@app.teardown_appcontext
-def close_connection(exception):
-    """Closes the connection upon loss of context."""
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
-    print "Pollease started successfully"
-    

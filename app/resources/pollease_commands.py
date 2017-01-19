@@ -2,15 +2,16 @@
     Pollease Action Central
 """
 import uuid
+
 import arrow
+from app.domain.constants import (ERR_NO_POLL_IN_PROGRESS,
+                                  ERR_POLL_ALREADY_IN_PROGRESS)
+from app.domain.custom_exceptions import PolleaseException
+from app.domain.poll import Poll, PollChoice
+from app.resources.logger import logger
 
-from constants import ERR_NO_POLL_IN_PROGRESS, ERR_POLL_ALREADY_IN_PROGRESS
-from papertrail import logger
-from custom_exceptions import PolleaseException
-from slack_formatting import generate_return_message
-
-from command_parser import parse_create_command
-from poll import Poll, PollChoice
+from .command_parser import parse_create_command
+from .slack_formatting import generate_return_message
 
 # pylint: disable=I0011,W1202
 
