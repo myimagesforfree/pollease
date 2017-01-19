@@ -22,8 +22,10 @@ logger.setLevel(logging.INFO)
 logging_filter = ContextFilter()
 logger.addFilter(logging_filter)
 
-syslog = SysLogHandler(address=(get_config().get("LOGGING", "PAPERTRAIL_SERVER"), \
-int(get_config().get("LOGGING", "PAPERTRAIL_PORT"))))
+server = get_config().get("LOGGING", "PAPERTRAIL_SERVER")
+port = int(get_config().get("LOGGING", "PAPERTRAIL_PORT"))
+
+syslog = SysLogHandler(address=(server, port))
 
 formatter = logging.Formatter('%(asctime)s POLLEASE: %(message)s', \
     datefmt='%b %d %H:%M:%S')
