@@ -1,6 +1,13 @@
 # IDEA config files
 .idea/
 .vscode/
+
+# Pollease config
 config_*.ini
+config.sh
+
+# Python
 *.pyc
+
+# Pollease other
 add-to-slack.html
