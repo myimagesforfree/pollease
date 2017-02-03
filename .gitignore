@@ -4,7 +4,7 @@
 
 # Pollease config
 config_*.ini
-config.sh
+configure.*.sh
 
 # Python
 *.pyc
