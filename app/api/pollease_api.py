@@ -58,16 +58,15 @@ def pollease():
 @pollease_api.route('/interactive', methods=['POST'])
 def interactive():
     """Slack Interaction, for example when a user clicks a vote button."""
-    logger.info(request.form.get("payload"))
     params = json.loads(request.form.get("payload"))
-
     voter_user_id = params.get("user").get("id")
     action_dict = params.get("actions")[0]
-
-    vote_values = action_dict.get("value").split()
+    vote_values = action_dict.get("selected_options")[0].get("value").split()
+    
     poll_id, poll_choice_id = vote_values[0], vote_values[1]
-
+    
     db_conn = get_db()
+    
     return cast_vote(repo, db_conn, poll_id, poll_choice_id, voter_user_id)
 
 @pollease_api.errorhandler(Exception)

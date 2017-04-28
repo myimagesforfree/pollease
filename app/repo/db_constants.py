@@ -46,7 +46,7 @@ SQL_FETCH_POLL_TOP1 = "SELECT * FROM polls LIMIT 1;"
 
 SQL_FETCH_POLL_CHOICES = "SELECT * FROM poll_choices WHERE poll_id='%s';"
 
-SQL_FETCH_POLL_VOTES = "SELECT * FROM votes WHERE poll_id='%s' LIMIT 1;"
+SQL_FETCH_POLL_VOTES = "SELECT * FROM votes WHERE poll_id='%s';"
 
 SQL_FETCH_POLL_VOTE_BY_POLL_AND_USER = "SELECT choice_id FROM votes WHERE poll_id='%s' \
  AND voter_user_id='%s' LIMIT 1;"

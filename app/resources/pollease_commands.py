@@ -77,8 +77,8 @@ def close_poll(repo, db_conn, command_details):
             if now_after_query < current_poll.date_close:
                 current_poll.date_close = now_after_query
                 repo.update_poll(db_conn, current_poll)
-
-            return generate_return_message("Poll: '" + poll_name + "' has now been closed.")
+    
+            return generate_return_message("Poll: '" + poll_name + "' has now been closed. Results: " + poll_votes)
     except PolleaseException as pex:
         return generate_return_message(str(pex))
 
@@ -97,31 +97,33 @@ def cast_vote(repo, db_conn, poll_id, poll_choice_id, voter_user_id):
 
 def generate_new_poll_response(poll):
     """Generates the message object for a pretty Slack message."""
-    attachments = []
-
+    options = []
+    
     for choice in poll.poll_choices:
-        attachments.append(
+        options.append(
             {
                 "text": choice.name,
-                "response_type": "in_channel",
-                "fallback": "You are unable to vote",
-                "callback_id": "vote_callback",
-                "color": "#3AA3E3",
-                "attachment_type": "default",
-                "actions": [
-                    {
-                        "name": "vote",
-                        "text": "Vote",
-                        "type": "button",
-                        "value": poll.poll_id + " " + choice.choice_id
-                    }
-                ]
+                "value": poll.poll_id + " " + choice.choice_id
             }
-        )
+        )  
 
-    current_poll = {
-        "text": poll.name,
-        "attachments": attachments
-    }
+    return {
+    "text": poll.name,
+    "response_type": "in_channel",
+    "attachments": [
+        {
+            "fallback": "You are unable to vote.",
+            "color": "#3AA3E3",
+            "attachment_type": "default",
+            "callback_id": "vote_callback",
+            "actions": [
+                {
+                    "name": "poll_choices",
+                    "type": "select",
+                    "options": options
+                }
+            ]
+        }
+    ]
+}
 
-    return current_poll

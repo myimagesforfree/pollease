@@ -142,16 +142,13 @@ class PolleaseRepository(object):
         poll_choice_id's (key) and a list of the users who voted for them (value)"""
         try:
             cursor = db_conn.execute(SQL_FETCH_POLL_VOTES % poll_id)
-
             poll_choices = self.fetch_poll_choices(db_conn, poll_id)
-
             poll_votes = {key: [] for key in poll_choices}
 
             for row in cursor:
                 poll_choice_id = row[1]
                 voter_user_id = row[2]
                 poll_votes[poll_choice_id].append(voter_user_id)
-
             return poll_votes
         except sqlite3.Error as e:
             logger.info("Error retrieving poll_votes for poll " + poll_id + \

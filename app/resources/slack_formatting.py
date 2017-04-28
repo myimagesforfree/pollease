@@ -6,6 +6,7 @@ def generate_return_message(message, options=None):
      such as color, replace original, etc."""
 
     msg = {
+        "response_type": "ephemeral",
         "text": message
     }
 
